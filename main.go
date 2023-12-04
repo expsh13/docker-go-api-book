@@ -22,7 +22,7 @@ func main() {
 	}
 	defer db.Close()
 
-	const sqlStr = `select title, contents, username, nice from articles;`
+	const sqlStr = `select * from articles;`
 	rows, err := db.Query(sqlStr)
 	if err != nil {
 		fmt.Println(err)
@@ -36,8 +36,12 @@ func main() {
 		// 変数 article の各フィールドに、取得レコードのデータを入れる
 		// (SQL クエリの select 句から、タイトル・本文・ユーザー名・いいね数が返ってくることはわかっている)
 		var article models.Article
-		err := rows.Scan(&article.Title, &article.Contents, &article.UserName,
-			&article.NiceNum)
+		var createdTime sql.NullTime
+		err := rows.Scan(&article.ID, &article.Title, &article.Contents, &article.UserName, &article.NiceNum, &createdTime)
+
+		if createdTime.Valid {
+			article.CreatedAt = createdTime.Time
+		}
 
 		if err != nil {
 			fmt.Println(err)
